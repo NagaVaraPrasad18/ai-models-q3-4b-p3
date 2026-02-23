@@ -1,0 +1,35 @@
+name: Deploy Qwen3-4B P3 (Shards 45-73)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create Models Directory
+        run: mkdir -p dist/Qwen3-4B-q4f16_1-MLC/resolve/main
+
+      - name: Download Shards 45-73
+        run: |
+          MODEL_DIR="dist/Qwen3-4B-q4f16_1-MLC/resolve/main"
+          HF_BASE="https://huggingface.co/mlc-ai/Qwen3-4B-q4f16_1-MLC/resolve/main"
+          for i in {45..73}; do
+            curl -L -s -o "$MODEL_DIR/params_shard_${i}.bin" "$HF_BASE/params_shard_${i}.bin"
+          done
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with: { path: 'dist' }
+      - name: Deploy
+        uses: actions/deploy-pages@v4
